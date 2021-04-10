@@ -8,12 +8,13 @@ using Pulse = System.Single;
 using Hz = System.Single;
 
 var sampleRate = 48000f;
+var pitchStandard = 440f;
 var volume = .5f;
 
-void Play(float[] wave)
+void Play(float[][] wave)
 {
     var filename = "./output.bin";
-    var bytes = wave.SelectMany(BitConverter.GetBytes).ToArray();
+    var bytes = wave.SelectMany(x => x).SelectMany(BitConverter.GetBytes).ToArray();
     if (File.Exists(filename)) File.Delete(filename);
     File.WriteAllBytes(filename, bytes);
     Process.Start($"ffplay", $"-showmode 1 -f f32le -ar {sampleRate} ./output.bin");
@@ -33,12 +34,10 @@ Pulse[] Freq(Hz hz, Seconds duration)
     return GetWave(step, duration);
 }
 
-var duration = 2f;
-var wave = new[]
-    {
-        Freq(440f, .5f),
-        Freq(540f, .5f),
-    }
-    .SelectMany(x => x).ToArray();
+var duration = .3f;
+var wave =
+    Enumerable.Range(0, 10)
+        .Select(i => Freq(pitchStandard + i * 100f, duration))
+        .ToArray();
 
 Play(wave);
