@@ -38,9 +38,17 @@ Pulse[] Freq(Hz hz, Seconds duration)
 Hz F(Semitons n) =>(float)(pitchStandard * Math.Pow(Math.Pow(2, 1.0 / 12.0), n));
 Pulse[] Note(Semitons n, Seconds duration) => Freq(F(n), duration);
 
-var duration = .3f;
-var wave =
-    Enumerable.Range(0, 10)
-        .Select(i => Note( i, duration))
-        .ToArray();
+var duration = .5f;
+var wave = new[]
+    {
+        Note(0, duration),
+        Note(2, duration),
+        Note(4, duration),
+        Note(5, duration),
+        Note(7, duration),
+        Note(9, duration),
+        Note(11, duration),
+        Note(12, duration),
+    };
+
 Play(wave);
