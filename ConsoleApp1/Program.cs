@@ -4,21 +4,26 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 
-void Play(IEnumerable<float> wave)
+var sampleRate = 48000f;
+var volume = .5f;
+
+void Play(float[] wave)
 {
     var filename = "./output.bin";
     var bytes = wave.SelectMany(BitConverter.GetBytes).ToArray();
     if (File.Exists(filename)) File.Delete(filename);
     File.WriteAllBytes(filename,bytes);
-    Process.Start("ffplay"," -f f32le -ar 48000 ./output.bin");
+    Process.Start($"ffplay",$"-showmode 1 -f f32le -ar {sampleRate} ./output.bin");
 }
 
-var volume = .5f;
-var step = .05f;
-var wave = Enumerable
-    .Range(0, 48000)
-    .Select(x => x * step)
-    .Select(x => (float)Math.Sin(x))
-    .Select(x => x * volume);
+float[] GetWave(float step, float duration) =>
+    Enumerable
+        .Range(0, (int)(sampleRate * duration))
+        .Select(x => x * step)
+        .Select(x => (float)Math.Sin(x))
+        .Select(x => x * volume)
+        .ToArray();
 
-Play(wave);
+var step =(float)(440f * 2 * Math.PI) / sampleRate;
+var duration = 2f;
+Play(GetWave(step, duration));
