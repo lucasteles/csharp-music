@@ -6,6 +6,7 @@ using Seconds = System.Single;
 using Samples = System.Single;
 using Pulse = System.Single;
 using Hz = System.Single;
+using Semitons = System.Single;
 
 var sampleRate = 48000f;
 var pitchStandard = 440f;
@@ -24,20 +25,22 @@ Pulse[] GetWave(float step, Seconds duration) =>
     Enumerable
         .Range(0, (int) (sampleRate * duration))
         .Select(x => x * step)
-        .Select(x => (float) Math.Sin(x))
+        .Select(MathF.Sin)
         .Select(x => x * volume)
         .ToArray();
 
 Pulse[] Freq(Hz hz, Seconds duration)
 {
-    var step = (float) (hz * 2 * Math.PI) / sampleRate;
+    var step = hz * 2 * MathF.PI / sampleRate;
     return GetWave(step, duration);
 }
+
+Hz F(Semitons n) =>(float)(pitchStandard * Math.Pow(Math.Pow(2, 1.0 / 12.0), n));
+Pulse[] Note(Semitons n, Seconds duration) => Freq(F(n), duration);
 
 var duration = .3f;
 var wave =
     Enumerable.Range(0, 10)
-        .Select(i => Freq(pitchStandard + i * 100f, duration))
+        .Select(i => Note( i, duration))
         .ToArray();
-
 Play(wave);
