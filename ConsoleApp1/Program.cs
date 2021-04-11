@@ -50,43 +50,94 @@ Pulse[] Freq(Hz hz, Seconds duration)
 }
 
 Hz F(Semitons n) => (float) (pitchStandard * Math.Pow(Math.Pow(2, 1.0 / 12.0), n));
-Pulse[] Note(Semitons n, Beats beats) => Freq(F(n), (beats * beatsPerSecond));
-
+Pulse[] NoteFreq(Semitons n, Beats beats) => Freq(F(n), (beats * beatsPerSecond));
 Pulse[][] Cycle(Pulse[][] list, int n) => Enumerable.Range(0, n).SelectMany(_ => list).ToArray();
 
-var wave = new[]
+Pulse[] Note(N note, Beats beats,  int level = 0)
 {
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .5f),
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .25f),
-    Note(0, .5f),
+    var pos = ((int)note - (int)N.A) + level * Enum.GetNames<N>().Length;
+    return NoteFreq(pos, beats);
+}
+// from https://www.youtube.com/watch?v=FtWIuFLBrjo
+var intro = new[]
+{
+    Note(N.A,  0.5f),
+    Note(N.A,  0.5f),
+    Note(N.A,  0.5f),
+    Note(N.A,  0.5f),
 
-    Note(5, .25f),
-    Note(5, .25f),
-    Note(5, .25f),
-    Note(5, .25f),
-    Note(5, .25f),
-    Note(5, .25f),
-    Note(5, .5f),
+    Note(N.Cs,  0.5f, 1),
+    Note(N.Cs,  0.5f, 1),
+    Note(N.Cs,  0.5f, 1),
+    Note(N.Cs,  0.5f, 1),
 
-    Note(3, .25f),
-    Note(3, .25f),
-    Note(3, .25f),
-    Note(3, .25f),
-    Note(3, .25f),
-    Note(3, .25f),
-    Note(3, .5f),
+    Note(N.B,  0.5f),
+    Note(N.B,  0.5f),
+    Note(N.B,  0.5f),
+    Note(N.B,  0.5f),
 
-    Note(-2, .5f),
+    Note(N.M,  0.5f, 1),
+    Note(N.M,  0.5f, 1),
+    Note(N.M,  0.5f, 1),
+    Note(N.M,  0.5f, 1),
+
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+    Note(N.Fs, 0.5f,1 ),
+
+    Note(N.B, 0.5f ),
+    Note(N.A, 0.5f ),
+    Note(N.Gs, 0.5f ),
+    Note(N.M, 0.5f ),
 };
 
-var music = Cycle(wave, 4);
+var verso = new[]
+{
+    Note(N.Fs, 1f),
+    Note(N.Fs, 0.5f),
+    Note(N.Cs, 0.5f,1),
+    Note(N.B, 1f),
+    Note(N.A, 1f),
+    Note(N.Gs, 1f ),
+    Note(N.Gs, 0.5f ),
+    Note(N.Gs, 0.5f ),
+    Note(N.B, 1),
+    Note(N.A, 0.5f),
+    Note(N.Gs, 0.5f ),
+    Note(N.Fs, 1f ),
+
+    Note(N.Fs, 0.5f ),
+    Note(N.A, 0.5f,1),
+    Note(N.Gs, 0.5f,1),
+    Note(N.A, 0.5f,1),
+    Note(N.Gs, 0.5f,1),
+    Note(N.A, 0.5f,1),
+    Note(N.Fs, 1f ),
+
+    Note(N.Fs, 0.5f ),
+    Note(N.A, 0.5f,1),
+    Note(N.Gs, 0.5f,1),
+    Note(N.A, 0.5f,1),
+    Note(N.Gs, 0.5f,1),
+    Note(N.A, 0.5f,1),
+};
+
+var doisVersos = Cycle(verso, 2);
+var halfMusic = intro.Concat(doisVersos).ToArray();
+var music = Cycle(halfMusic, 2).ToArray();
+
 Play(music);
+
+
+enum N { C, Cs, D, Ds, M, F, Fs, G, Gs, A, As, B }
