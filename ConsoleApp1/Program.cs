@@ -7,10 +7,13 @@ using Samples = System.Single;
 using Pulse = System.Single;
 using Hz = System.Single;
 using Semitons = System.Single;
+using Beats = System.Single;
 
 var sampleRate = 48000f;
 var pitchStandard = 440f;
 var volume = .5f;
+var bpm = 120f;
+var beatsPerSecond = 60f / bpm;
 
 void Play(float[][] wave)
 {
@@ -47,15 +50,43 @@ Pulse[] Freq(Hz hz, Seconds duration)
 }
 
 Hz F(Semitons n) => (float) (pitchStandard * Math.Pow(Math.Pow(2, 1.0 / 12.0), n));
-Pulse[] Note(Semitons n, Seconds duration) => Freq(F(n), duration);
-var duration = .5f;
+Pulse[] Note(Semitons n, Beats beats) => Freq(F(n), (beats * beatsPerSecond));
+
+Pulse[][] Cycle(Pulse[][] list, int n) => Enumerable.Range(0, n).SelectMany(_ => list).ToArray();
+
 var wave = new[]
 {
-    Note(0, duration),
-    Note(0, duration),
-    Note(0, duration),
-    Note(0, duration),
-    Note(0, duration),
-    Note(0, duration),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .5f),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .25f),
+    Note(0, .5f),
+
+    Note(5, .25f),
+    Note(5, .25f),
+    Note(5, .25f),
+    Note(5, .25f),
+    Note(5, .25f),
+    Note(5, .25f),
+    Note(5, .5f),
+
+    Note(3, .25f),
+    Note(3, .25f),
+    Note(3, .25f),
+    Note(3, .25f),
+    Note(3, .25f),
+    Note(3, .25f),
+    Note(3, .5f),
+
+    Note(-2, .5f),
 };
-Play(wave);
+
+var music = Cycle(wave, 4);
+Play(music);
