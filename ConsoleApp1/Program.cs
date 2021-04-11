@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
-using Seconds = System.Single;
+using Seconds = System.Single; // System.Single is float
 using Samples = System.Single;
 using Pulse = System.Single;
 using Hz = System.Single;
