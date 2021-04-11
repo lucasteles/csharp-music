@@ -32,21 +32,30 @@ Pulse[] GetWave(float step, Seconds duration) =>
 Pulse[] Freq(Hz hz, Seconds duration)
 {
     var step = hz * 2 * MathF.PI / sampleRate;
-    return GetWave(step, duration);
+    var output = GetWave(step, duration);
+
+    var attack =
+        Enumerable.Range(0, output.Length)
+            .Select(x => MathF.Min(1, x / 1000f));
+    var release = attack.Reverse();
+    var wave = output
+        .Zip(attack, (w, v) => w * v)
+        .Zip(release, (w, v) => w * v)
+        .ToArray();
+
+    return wave;
 }
 
-Hz F(Semitons n) =>(float)(pitchStandard * Math.Pow(Math.Pow(2, 1.0 / 12.0), n));
+Hz F(Semitons n) => (float) (pitchStandard * Math.Pow(Math.Pow(2, 1.0 / 12.0), n));
 Pulse[] Note(Semitons n, Seconds duration) => Freq(F(n), duration);
-
 var duration = .5f;
 var wave = new[]
-    {
-        Note(0, duration),
-        Note(0, duration),
-        Note(0, duration),
-        Note(0, duration),
-        Note(0, duration),
-        Note(0, duration),
-    };
-
+{
+    Note(0, duration),
+    Note(0, duration),
+    Note(0, duration),
+    Note(0, duration),
+    Note(0, duration),
+    Note(0, duration),
+};
 Play(wave);
