@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
@@ -16,10 +15,10 @@ var volume = .5f;
 var bpm = 120f;
 var beatsPerSecond = 60f / bpm;
 
-void Play(float[] wave)
+void Play(float[][] wave)
 {
     var filename = "./output.bin";
-    var bytes = wave.SelectMany(BitConverter.GetBytes).ToArray();
+    var bytes = wave.SelectMany(x => x).SelectMany(BitConverter.GetBytes).ToArray();
     if (File.Exists(filename)) File.Delete(filename);
     File.WriteAllBytes(filename, bytes);
     Process.Start($"ffplay", $"-showmode 1 -f f32le -ar {sampleRate} ./output.bin");
@@ -52,19 +51,15 @@ Pulse[] Freq(Hz hz, Seconds duration)
 
 Hz F(Semitons n) => (float) (pitchStandard * Math.Pow(Math.Pow(2, 1.0 / 12.0), n));
 Pulse[] NoteFreq(Semitons n, Beats beats) => Freq(F(n), (beats * beatsPerSecond));
-Pulse[] Cycle(Pulse[] list, int n) => Enumerable.Range(0, n).SelectMany(_ => list).ToArray();
+Pulse[][] Cycle(Pulse[][] list, int n) => Enumerable.Range(0, n).SelectMany(_ => list).ToArray();
 
-Pulse[] Combine(IEnumerable<Pulse> track1, IEnumerable<Pulse> track2) =>
-    track1.Zip(track2, (a, b) => (a + b)/2f).ToArray();
-
-
-Pulse[] Note(N note, Beats beats,  int octave = 0)
+Pulse[] Note(N note, Beats beats,  int level = 0)
 {
-    var pos = ((int)note - (int)N.A) + octave * Enum.GetNames<N>().Length;
+    var pos = ((int)note - (int)N.A) + level * Enum.GetNames<N>().Length;
     return NoteFreq(pos, beats);
 }
 // from https://www.youtube.com/watch?v=FtWIuFLBrjo
-var introSolo = new[]
+var intro = new[]
 {
     Note(N.A,  0.5f),
     Note(N.A,  0.5f),
@@ -105,26 +100,15 @@ var introSolo = new[]
     Note(N.A, 0.5f ),
     Note(N.Gs, 0.5f ),
     Note(N.M, 0.5f ),
-}.SelectMany(x => x);
+};
 
-var introBase = new[]
-{
-    Note(N.D, 4f, -1),
-    Note(N.M, 4f, -1),
-    Note(N.Fs, 4f, -1),
-    Note(N.Fs, 4f, -1),
-}.SelectMany(x => x);
-
-var intro = Combine(introSolo, introBase);
-
-var versoSolo = new[]
+var verso = new[]
 {
     Note(N.Fs, 1f),
     Note(N.Fs, 0.5f),
     Note(N.Cs, 0.5f,1),
     Note(N.B, 1f),
     Note(N.A, 1f),
-
     Note(N.Gs, 1f ),
     Note(N.Gs, 0.5f ),
     Note(N.Gs, 0.5f ),
@@ -147,21 +131,12 @@ var versoSolo = new[]
     Note(N.A, 0.5f,1),
     Note(N.Gs, 0.5f,1),
     Note(N.A, 0.5f,1),
-}.SelectMany(x => x);
-
-var versoBase = new[]
-{
-    Note(N.D, 4f, -1),
-    Note(N.M, 4f, -1),
-    Note(N.Fs, 4f, -1),
-    Note(N.Fs, 4f, -1),
-}.SelectMany(x => x);
-
-var verso = Combine(versoSolo, versoBase);
+};
 
 var doisVersos = Cycle(verso, 2);
 var halfMusic = intro.Concat(doisVersos).ToArray();
 var music = Cycle(halfMusic, 2).ToArray();
+
 Play(music);
 
 
