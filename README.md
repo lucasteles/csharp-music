@@ -1,4 +1,2 @@
-# csharp-ffmpeg-music
+# csharp-music
 
-
-Needs ffmpeg
