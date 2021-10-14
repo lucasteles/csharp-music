@@ -3,11 +3,13 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using Seconds = System.Single; // System.Single is float
-using Samples = System.Single;
+using Sample = System.Single;
 using Pulse = System.Single;
 using Hz = System.Single;
 using Semitons = System.Single;
 using Beats = System.Single;
+using OpenTK.Audio.OpenAL;
+using System.Threading;
 
 var sampleRate = 48000f;
 var pitchStandard = 440f;
@@ -15,13 +17,27 @@ var volume = .5f;
 var bpm = 120f;
 var beatsPerSecond = 60f / bpm;
 
-void Play(float[][] wave)
+void Play(Sample[][] wave)
 {
-    var filename = "./output.bin";
-    var bytes = wave.SelectMany(x => x).SelectMany(BitConverter.GetBytes).ToArray();
-    if (File.Exists(filename)) File.Delete(filename);
-    File.WriteAllBytes(filename, bytes);
-    Process.Start($"ffplay", $"-showmode 1 -f f32le -ar {sampleRate} ./output.bin");
+    var waveArray = wave.SelectMany(x => x).ToArray();
+    var deviceName = ALC.GetString (ALDevice.Null, AlcGetString.DefaultDeviceSpecifier);
+    var device = ALC.OpenDevice(deviceName);
+    var context = ALC.CreateContext(device, (int[])null);
+    ALC.MakeContextCurrent(context);
+    AL.GenBuffer(out var alBuffer);
+    AL.BufferData(alBuffer, ALFormat.MonoFloat32Ext, waveArray, (int)sampleRate);
+
+    AL.Listener(ALListenerf.Gain, 1f);
+    AL.GenSource(out var alSource);
+    AL.Source(alSource, ALSourcef.Gain, 1f);
+    AL.Source(alSource, ALSourcei.Buffer, alBuffer);
+    AL.SourcePlay(alSource);
+    while (AL.GetSourceState(alSource) == ALSourceState.Playing)
+        Thread.Sleep(10);
+    AL.SourceStop(alSource);
+    ALC.MakeContextCurrent(ALContext.Null);
+    ALC.DestroyContext(context);
+    ALC.CloseDevice(device);
 }
 
 Pulse[] GetWave(float step, Seconds duration) =>
